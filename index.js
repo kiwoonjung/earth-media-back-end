@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotevn";
+import dotenv from "dotenv";
 import multer from "multer";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -33,3 +33,18 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+/* MONGOOSE SETUP */
+const PORT = process.env.PORT || 6001;
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    console.log("Connected to MongoDB");
+
+    app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
+  } catch (error) {
+    console.error(`Connection error: ${error.message}`);
+  }
+}
+
+startServer();
