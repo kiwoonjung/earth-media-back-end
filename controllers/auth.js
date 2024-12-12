@@ -23,7 +23,8 @@ export const register = async (req, res) => {
       firstName,
       lastName,
       email,
-      picturePath: passwordHash,
+      password: passwordHash,
+      picturePath,
       friends,
       location,
       occupation,
@@ -32,6 +33,32 @@ export const register = async (req, res) => {
     });
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* LOGGING IN */
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    if (!user)
+      return res.status(400).json({ message: "User does not exist. " });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials. " });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+    // delete user.password;
+
+    // Convert to plain object and remove password
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    res.status(200).json({ token, user: userObject });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
